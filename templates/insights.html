@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Insights & Analytics — SmartSpend{% endblock %}
+
+{% block content %}
+<!-- Top Header -->
+<div class="page-top-header">
+  <div class="header-titles">
+    <h1>Insights &amp; Analytics</h1>
+    <p class="header-subtitle">Deep visibility into your monthly burn rate, emotional intents, and daily trends.</p>
+  </div>
+  <div class="header-actions">
+    <div class="streak-pill" id="insightsStreakBadge">
+      <i data-lucide="flame" class="lucide-icon" style="stroke: var(--brand-forest); width: 14px; height: 14px;"></i>
+      <span id="insightsStreakText" class="tnum">Active streak</span>
+    </div>
+  </div>
+</div>
+
+<!-- Top 3 KPI Metric Cards -->
+<div class="insights-kpi-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px;">
+  <!-- Daily Average Spend -->
+  <div class="fintech-card" style="padding: 18px 20px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+      <i data-lucide="trending-up" class="lucide-icon" style="stroke: var(--ink-muted); width: 15px; height: 15px;"></i>
+      <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);">Daily Average Spend</span>
+    </div>
+    <div id="kpiDailyAvg" class="hero-amount tnum" style="font-size: 1.65rem; font-weight: 800; color: var(--ink-primary); margin-bottom: 2px;">₹0.00</div>
+    <div style="font-size: 0.75rem; color: var(--ink-muted);">Per day across active days this month</div>
+  </div>
+
+  <!-- Essential vs Non-Essential Ratio -->
+  <div class="fintech-card" style="padding: 18px 20px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+      <i data-lucide="scale" class="lucide-icon" style="stroke: var(--ink-muted); width: 15px; height: 15px;"></i>
+      <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);">Essential vs Non-Essential</span>
+    </div>
+    <div id="kpiRatio" class="hero-amount tnum" style="font-size: 1.65rem; font-weight: 800; color: var(--brand-forest); margin-bottom: 2px;">0% / 0%</div>
+    <div style="font-size: 0.75rem; color: var(--ink-muted);" id="kpiRatioSub">Essential vs Craving/Impulse</div>
+  </div>
+
+  <!-- Highest Spend Day -->
+  <div class="fintech-card" style="padding: 18px 20px;">
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+      <i data-lucide="calendar" class="lucide-icon" style="stroke: var(--ink-muted); width: 15px; height: 15px;"></i>
+      <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);">Highest Spend Day</span>
+    </div>
+    <div id="kpiHighestDayAmt" class="hero-amount tnum" style="font-size: 1.65rem; font-weight: 800; color: var(--ink-primary); margin-bottom: 2px;">₹0.00</div>
+    <div style="font-size: 0.75rem; color: var(--ink-muted);" id="kpiHighestDayDate">No records yet</div>
+  </div>
+</div>
+
+<!-- Bento 2-Column Row: Breakdown & 7-Day Trend -->
+<div class="bento-grid" style="grid-template-columns: 1.15fr 1fr; gap: 24px; margin-bottom: 24px;">
+  <!-- Left Column: Spending Breakdown with 5 Editorial Colors -->
+  <section class="fintech-card" style="padding: 24px;">
+    <div class="card-heading-row" style="margin-bottom: 16px;">
+      <h2 class="card-title">
+        <i data-lucide="pie-chart" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+        <span>Spending Breakdown</span>
+      </h2>
+      <div class="chart-tabs-nav" role="tablist">
+        <button type="button" id="insightsTabCatBtn" class="tab-btn active" role="tab" aria-selected="true">Category</button>
+        <button type="button" id="insightsTabMoodBtn" class="tab-btn" role="tab" aria-selected="false">Intent</button>
+      </div>
+    </div>
+
+    <!-- Doughnut Canvas -->
+    <div style="position: relative; height: 220px; width: 100%; margin-bottom: 20px;">
+      <canvas id="insightsDoughnutChart"></canvas>
+    </div>
+
+    <!-- Itemized List Breakdown -->
+    <div class="card-heading-row" style="margin-bottom: 8px; padding-top: 12px; border-top: 1px solid var(--border-hairline);">
+      <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);">Itemized Breakdown</span>
+      <span style="font-size: 0.75rem; color: var(--ink-muted);">Share of Total</span>
+    </div>
+    <div id="insightsItemList" style="display: flex; flex-direction: column; gap: 6px;">
+      <!-- Populated dynamically -->
+    </div>
+  </section>
+
+  <!-- Right Column: 7-Day Trend Bar Chart with Safe Baseline -->
+  <section class="fintech-card" style="padding: 24px;">
+    <div class="card-heading-row" style="margin-bottom: 8px;">
+      <h2 class="card-title">
+        <i data-lucide="bar-chart-2" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+        <span>7-Day Daily Trend</span>
+      </h2>
+      <div class="streak-pill" style="font-size: 0.75rem; padding: 4px 8px;">
+        <span>Daily Target: <strong id="trendSafeBaseline" class="tnum">₹0.00</strong></span>
+      </div>
+    </div>
+    <p style="font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 16px;">
+      Daily spends compared to your safe daily allowance baseline.
+    </p>
+
+    <!-- Bar Chart Canvas -->
+    <div style="position: relative; height: 260px; width: 100%;">
+      <canvas id="insightsTrendChart"></canvas>
+    </div>
+  </section>
+</div>
+
+<!-- Bottom Card: Monthly Habit Stories -->
+<section class="fintech-card" style="padding: 24px;">
+  <div class="card-heading-row" style="margin-bottom: 12px;">
+    <h2 class="card-title">
+      <i data-lucide="compass" class="lucide-icon" style="stroke: var(--brand-forest);"></i>
+      <span>Calm Intelligence &amp; Habit Stories</span>
+    </h2>
+    <span class="card-tag">Automated Synthesis</span>
+  </div>
+
+  <div id="insightsStoriesList" style="display: flex; flex-direction: column; gap: 10px;">
+    <!-- Populated dynamically -->
+  </div>
+</section>
+{% endblock %}

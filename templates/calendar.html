@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}SmartSpend — Monthly Spending Calendar{% endblock %}
+
+{% block content %}
+<!-- Top Page Header -->
+<div class="page-top-header">
+  <div class="header-titles">
+    <h1>Spending Calendar</h1>
+    <p class="header-subtitle">Tap any date to inspect your daily memories and spending pace.</p>
+  </div>
+  <div class="header-actions">
+    <!-- Month Navigation Controls -->
+    <div class="calendar-month-controls" aria-label="Month Navigation">
+      <button type="button" id="calPrevMonthBtn" class="btn-icon-subtle" title="Previous month" aria-label="Previous month">
+        <i data-lucide="chevron-left" class="lucide-icon"></i>
+      </button>
+      <span id="calMonthYearTitle" class="calendar-month-title tnum">Loading...</span>
+      <button type="button" id="calNextMonthBtn" class="btn-icon-subtle" title="Next month" aria-label="Next month">
+        <i data-lucide="chevron-right" class="lucide-icon"></i>
+      </button>
+      <button type="button" id="calTodayBtn" class="btn-subtle" style="height: 34px; padding: 0 12px; font-size: 0.75rem;">
+        Today
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 4-Column Compact KPI Strip -->
+<div class="calendar-kpi-strip">
+  <div class="cal-kpi-item">
+    <span class="cal-kpi-label">Month Total</span>
+    <span id="calKpiMonthTotal" class="cal-kpi-val tnum">₹0.00</span>
+  </div>
+  <div class="cal-kpi-item">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span class="cal-status-dot dot-calm" aria-hidden="true"></span>
+      <span class="cal-kpi-label">Calm Days</span>
+    </div>
+    <span id="calKpiCalmDays" class="cal-kpi-val tnum">0</span>
+  </div>
+  <div class="cal-kpi-item">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span class="cal-status-dot dot-heavy" aria-hidden="true"></span>
+      <span class="cal-kpi-label">Heavy Days</span>
+    </div>
+    <span id="calKpiHeavyDays" class="cal-kpi-val tnum">0</span>
+  </div>
+  <div class="cal-kpi-item">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <span class="cal-status-dot dot-zero" aria-hidden="true"></span>
+      <span class="cal-kpi-label">No-Spend Days</span>
+    </div>
+    <span id="calKpiNoSpendDays" class="cal-kpi-val tnum">0</span>
+  </div>
+</div>
+
+<!-- Main 2-Column Calendar Layout Grid -->
+<div class="calendar-layout-grid">
+  <!-- Left Card: Interactive 7-Column Month Grid -->
+  <section class="fintech-card calendar-card" aria-label="Interactive Monthly Calendar Grid">
+    <!-- Weekday Header Row -->
+    <div class="calendar-weekdays-row" aria-hidden="true">
+      <div class="cal-weekday-col">Sun</div>
+      <div class="cal-weekday-col">Mon</div>
+      <div class="cal-weekday-col">Tue</div>
+      <div class="cal-weekday-col">Wed</div>
+      <div class="cal-weekday-col">Thu</div>
+      <div class="cal-weekday-col">Fri</div>
+      <div class="cal-weekday-col">Sat</div>
+    </div>
+
+    <!-- 7-Column Days Grid -->
+    <div id="calendarGridDays" class="calendar-days-grid" role="grid" aria-label="Monthly date cells">
+      <!-- Populated dynamically by calendar.js -->
+    </div>
+
+    <!-- Subtle Legend Bar -->
+    <div class="calendar-legend-bar" aria-label="Calendar color legend">
+      <div class="legend-item">
+        <span class="legend-swatch swatch-zero" aria-hidden="true"></span>
+        <span>Zero Spend</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch swatch-calm" aria-hidden="true"></span>
+        <span id="legendCalmLabel">Calm (≤ ₹100.00)</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch swatch-heavy" aria-hidden="true"></span>
+        <span>Over Daily Pace</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch swatch-today" aria-hidden="true"></span>
+        <span>Today</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Right Card: Day Inspector Panel -->
+  <section class="fintech-card inspector-card" aria-label="Selected Day Inspector">
+    <!-- Inspector Header -->
+    <div class="inspector-header">
+      <div>
+        <h2 id="inspectorDateFull" class="inspector-date-title">Select a Date</h2>
+        <div id="inspectorDaySub" class="inspector-sub">Daily Spending Inspector</div>
+      </div>
+      <span id="inspectorStatusPill" class="cal-status-pill pill-calm">Within Pace</span>
+    </div>
+
+    <!-- Metric Card -->
+    <div class="inspector-metric-card">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div>
+          <div class="inspector-label">Day Total</div>
+          <div id="inspectorDayTotal" class="inspector-big-amt tnum">₹0.00</div>
+        </div>
+        <div style="text-align: right;">
+          <div class="inspector-label">Daily Target</div>
+          <div id="inspectorDayTarget" class="inspector-target-amt tnum">₹100.00</div>
+        </div>
+      </div>
+
+      <!-- Wallet Mood Check-In -->
+      <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-hairline); display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-size: 0.75rem; color: var(--ink-muted); font-weight: 600;">Wallet Mood</span>
+        <div id="inspectorMoodContainer" style="display: flex; align-items: center; gap: 6px;">
+          <!-- Dynamically populated badge or mood checkin picker -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Scrollable Transactions List -->
+    <div class="inspector-list-section">
+      <div class="inspector-list-title">
+        <span>Transactions</span>
+        <span id="inspectorTxCount" class="tnum" style="font-size: 0.75rem; color: var(--ink-muted); font-weight: 600;">0 entries</span>
+      </div>
+
+      <div id="inspectorExpensesList" class="inspector-expenses-list">
+        <!-- Populated dynamically by calendar.js -->
+      </div>
+    </div>
+
+    <!-- Bottom Action Button -->
+    <a id="inspectorLogBtn" href="/log-expense" class="btn-forest-primary" style="margin-top: auto; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <i data-lucide="plus" class="lucide-icon" style="stroke: #FFFFFF; width: 16px; height: 16px;"></i>
+      <span id="inspectorLogBtnText">Log Expense for this Date</span>
+    </a>
+  </section>
+</div>
+
+<!-- Shared Edit Transaction Modal (for inline edits from Day Inspector) -->
+<div id="editExpenseModal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+      <h2 id="modal-edit-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Edit Transaction</h2>
+      <button type="button" id="closeEditModalBtn" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);">
+        <i data-lucide="x" class="lucide-icon"></i>
+      </button>
+    </div>
+
+    <form id="editExpenseForm">
+      <input type="hidden" id="editExpenseId">
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 12px;">
+        <div class="field-group">
+          <label class="field-label" for="editAmount">Amount (₹)</label>
+          <div class="input-affix-wrapper">
+            <span class="input-affix">₹</span>
+            <input type="number" id="editAmount" class="fintech-input has-prefix tnum" step="any" min="1" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editDate">Date</label>
+          <input type="date" id="editDate" class="fintech-input tnum" required>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label" for="editNote">Memory Note</label>
+        <input type="text" id="editNote" class="fintech-input" maxlength="60" placeholder="e.g. Chai w/ Raj">
+      </div>
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 14px;">
+        <div class="field-group">
+          <label class="field-label" for="editCategory">Category</label>
+          <select id="editCategory" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Hostel/PG">Hostel/PG</option>
+            <option value="Fun">Fun</option>
+            <option value="Misc">Misc</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editMood">Context / Intent</label>
+          <select id="editMood" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Essential">Essential</option>
+            <option value="Craving">Craving</option>
+            <option value="Friends">Friends</option>
+            <option value="Impulse">Impulse</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Split toggle in edit modal -->
+      <div class="split-wrapper" style="margin-bottom: 18px;">
+        <div class="split-header-row">
+          <label for="editSplitToggle" class="split-toggle-label">
+            <input type="checkbox" id="editSplitToggle" class="switch-input">
+            <span>Split expense with friends?</span>
+          </label>
+        </div>
+        <div id="editSplitControls" class="split-expand-body" style="display: none; margin-top: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 0.8125rem; font-weight: 600; color: var(--ink-secondary);">Total People (including you):</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" id="editSplitDecBtn" class="stepper-btn">-</button>
+              <span id="editSplitCountVal" class="tnum" style="font-weight: 700; width: 24px; text-align: center;">2</span>
+              <button type="button" id="editSplitIncBtn" class="stepper-btn">+</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="editSplitWith">Split With (Friend / Roommate Names)</label>
+            <input type="text" id="editSplitWith" class="fintech-input" placeholder="e.g. Aman, Priya" maxlength="100">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" id="cancelEditModalBtn" class="btn-subtle" style="width: auto; padding: 0 16px; height: 38px;">Cancel</button>
+        <button type="submit" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 38px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}

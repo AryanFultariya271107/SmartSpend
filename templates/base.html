@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SmartSpend — Personal Budget Tracker{% endblock %}</title>
+  
+  <!-- Typography: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Chart.js v4 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Editorial Fintech CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+  <script>
+    window.SpendCalmUser = {
+      id: {{ user.id | default(1) }},
+      participant_code: "{{ user.participant_code | default('P01') }}",
+      monthly_budget: {{ user.monthly_budget | default(3000.0) }}
+    };
+    window.SmartSpendUser = window.SpendCalmUser;
+  </script>
+</head>
+<body>
+  <!-- Anti-flicker: Immediately apply collapsed state before layout renders -->
+  <script>
+    (function() {
+      try {
+        if (window.innerWidth >= 1024 && localStorage.getItem('smartspend_sidebar_collapsed') === 'true') {
+          document.body.classList.add('sidebar-collapsed');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <div class="app-shell">
+    <!-- Persistent Left Sidebar (Desktop >= 1024px) -->
+    <aside class="app-sidebar" aria-label="Main Application Sidebar">
+      <div class="sidebar-top">
+        <!-- Minimal Geometric SVG Wordmark + Collapse Button -->
+        <div class="sidebar-brand-row">
+          <a href="/" class="brand-wordmark" aria-label="SmartSpend Home" title="SmartSpend Home">
+            <svg class="brand-svg" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="28" height="28" rx="8" fill="#1B4332"/>
+              <path d="M8 14C8 10.6863 10.6863 8 14 8C17.3137 8 20 10.6863 20 14C20 17.3137 17.3137 20 14 20" stroke="#EAF2EE" stroke-width="2.2" stroke-linecap="round"/>
+              <circle cx="14" cy="14" r="2.5" fill="#EAF2EE"/>
+            </svg>
+            <div class="sidebar-text">
+              <div class="brand-title">SmartSpend</div>
+              <span class="brand-sub">Personal Budget Tracker</span>
+            </div>
+          </a>
+          <button type="button" id="sidebarCollapseBtn" class="btn-sidebar-icon" title="Collapse sidebar" aria-label="Collapse sidebar" data-tooltip="Collapse sidebar">
+            <i data-lucide="panel-left-close" class="lucide-icon" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+
+        <!-- Grouped Sidebar Navigation -->
+        <nav class="sidebar-nav" aria-label="Sidebar Navigation">
+          <!-- FINANCE GROUP -->
+          <div class="sidebar-group-label sidebar-text">Finance</div>
+          
+          <a href="/" class="sidebar-nav-item {% if active_page == 'dashboard' %}active{% endif %}" title="Overview" data-tooltip="Overview">
+            <i data-lucide="layout-dashboard" class="lucide-icon"></i>
+            <span class="sidebar-text">Overview</span>
+          </a>
+
+          <a href="/log-expense" class="sidebar-nav-item {% if active_page == 'log_expense' %}active{% endif %}" title="Log Expense" data-tooltip="Log Expense">
+            <i data-lucide="plus-circle" class="lucide-icon"></i>
+            <span class="sidebar-text">Log Expense</span>
+          </a>
+
+          <a href="/transactions" class="sidebar-nav-item {% if active_page == 'transactions' %}active{% endif %}" title="Transactions" data-tooltip="Transactions">
+            <i data-lucide="receipt-text" class="lucide-icon"></i>
+            <span class="sidebar-text">Transactions</span>
+          </a>
+
+          <a href="/calendar" class="sidebar-nav-item {% if active_page == 'calendar' %}active{% endif %}" title="Calendar" data-tooltip="Calendar">
+            <i data-lucide="calendar-days" class="lucide-icon"></i>
+            <span class="sidebar-text">Calendar</span>
+          </a>
+
+          <a href="/splits-bills" class="sidebar-nav-item {% if active_page == 'splits_bills' %}active{% endif %}" title="Splits & Bills" data-tooltip="Splits &amp; Bills">
+            <i data-lucide="users" class="lucide-icon"></i>
+            <span class="sidebar-text">Splits &amp; Bills</span>
+            {% if pending_splits_count and pending_splits_count > 0 %}
+            <span class="sidebar-badge-count tnum">{{ pending_splits_count }}</span>
+            {% endif %}
+          </a>
+
+          <a href="/cooldown" class="sidebar-nav-item {% if active_page == 'cooldown' %}active{% endif %}" title="Impulse Cooldown" data-tooltip="Impulse Cooldown">
+            <i data-lucide="clock" class="lucide-icon"></i>
+            <span class="sidebar-text">Impulse Cooldown</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- Sidebar Bottom: Clean Personal Finance Budget Card -->
+      <div class="sidebar-bottom">
+        <div class="profile-card sidebar-text">
+          <div class="profile-budget-label">Monthly Target Budget</div>
+          <div class="profile-budget-val tnum">₹{{ "{:,.0f}".format(user.monthly_budget) }}</div>
+          <button type="button" id="open-participant-modal" class="btn-sidebar-switch">
+            <i data-lucide="sliders-horizontal" style="width: 13px; height: 13px;"></i>
+            <span>Edit Budget</span>
+          </button>
+        </div>
+        <!-- Compact Collapsed Footer Trigger -->
+        <button type="button" id="collapsedBudgetBtn" class="collapsed-budget-btn" title="Edit Budget" aria-label="Edit Budget" data-tooltip="Edit Budget">
+          <i data-lucide="sliders-horizontal" class="lucide-icon" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Overlay Backdrop for Mobile/Tablet Drawer -->
+    <div id="sidebarBackdrop" class="sidebar-backdrop" aria-hidden="true"></div>
+
+    <!-- Mobile Sticky Top Header (< 1024px) -->
+    <header class="mobile-top-bar" aria-label="Mobile Navigation Header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" id="mobileSidebarToggle" class="btn-sidebar-icon" title="Open navigation" aria-label="Open navigation">
+          <i data-lucide="panel-left-open" class="lucide-icon" style="width: 18px; height: 18px;"></i>
+        </button>
+        <a href="/" class="brand-wordmark" style="padding: 0;">
+          <svg class="brand-svg" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px;">
+            <rect width="28" height="28" rx="8" fill="#1B4332"/>
+            <path d="M8 14C8 10.6863 10.6863 8 14 8C17.3137 8 20 10.6863 20 14C20 17.3137 17.3137 20 14 20" stroke="#EAF2EE" stroke-width="2.2" stroke-linecap="round"/>
+            <circle cx="14" cy="14" r="2.5" fill="#EAF2EE"/>
+          </svg>
+          <span class="brand-title" style="font-size: 1rem;">SmartSpend</span>
+        </a>
+      </div>
+
+      <button type="button" id="mobile-open-modal" class="streak-pill" style="padding: 4px 10px; font-size: 0.75rem;">
+        <i data-lucide="sliders-horizontal" style="width: 13px; height: 13px;"></i>
+        <span>₹{{ "{:,.0f}".format(user.monthly_budget) }} Budget</span>
+      </button>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="app-workspace">
+      <!-- Desktop Sidebar Reopen Button -->
+      <button type="button" id="sidebarOpenBtn" class="sidebar-open-btn" title="Show sidebar" aria-label="Show sidebar">
+        <i data-lucide="panel-left-open" class="lucide-icon" style="width: 18px; height: 18px;"></i>
+      </button>
+      <div class="workspace-inner">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    <!-- Mobile Fixed Bottom Navigation (< 1024px) -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Bottom Navigation">
+      <a href="/" class="bottom-nav-tab {% if active_page == 'dashboard' %}active{% endif %}">
+        <i data-lucide="layout-dashboard" class="lucide-icon"></i>
+        <span>Overview</span>
+      </a>
+      <a href="/log-expense" class="bottom-nav-tab {% if active_page == 'log_expense' %}active{% endif %}">
+        <i data-lucide="plus-circle" class="lucide-icon"></i>
+        <span>Log Spend</span>
+      </a>
+      <a href="/transactions" class="bottom-nav-tab {% if active_page == 'transactions' %}active{% endif %}">
+        <i data-lucide="receipt-text" class="lucide-icon"></i>
+        <span>Ledger</span>
+      </a>
+      <a href="/calendar" class="bottom-nav-tab {% if active_page == 'calendar' %}active{% endif %}">
+        <i data-lucide="calendar-days" class="lucide-icon"></i>
+        <span>Calendar</span>
+      </a>
+      <a href="/splits-bills" class="bottom-nav-tab {% if active_page == 'splits_bills' %}active{% endif %}">
+        <i data-lucide="users" class="lucide-icon"></i>
+        <span>Splits</span>
+      </a>
+      <a href="/cooldown" class="bottom-nav-tab {% if active_page == 'cooldown' %}active{% endif %}">
+        <i data-lucide="clock" class="lucide-icon"></i>
+        <span>Cooldown</span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- Update Monthly Budget Modal -->
+  <div id="participant-modal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-fintech-title">
+    <div class="modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+        <h2 id="modal-fintech-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Update Monthly Budget</h2>
+        <button type="button" id="close-participant-modal" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);" aria-label="Close dialog">
+          <i data-lucide="x" class="lucide-icon"></i>
+        </button>
+      </div>
+
+      <p style="font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 20px; line-height: 1.45;">
+        Adjust your total monthly allowance. SmartSpend uses this to calculate your daily Safe-to-Spend pacing in real time.
+      </p>
+
+      <form id="participant-form">
+        <input type="hidden" id="modal-participant-code" value="{{ user.participant_code | default('P01') }}">
+
+        <div style="margin-bottom: 20px;">
+          <label class="field-label" for="modal-monthly-budget">Monthly Target Budget (₹)</label>
+          <input type="number" id="modal-monthly-budget" class="fintech-input tnum" value="{{ user.monthly_budget }}" min="100" max="100000" step="50" required>
+        </div>
+
+        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button type="button" id="modal-cancel-btn" class="preset-chip-btn" style="min-width: 80px;">Cancel</button>
+          <button type="submit" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 38px;">Save Budget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Stack -->
+  <div id="toast-container" class="toast-stack" aria-live="polite"></div>
+
+  <!-- Slide-Over SmartSpend AI Drawer -->
+  <div id="ai-drawer-overlay" class="ai-drawer-overlay"></div>
+  <aside id="ai-drawer" class="ai-side-drawer" aria-label="SmartSpend AI Chat Assistant">
+    <div class="ai-drawer-head buddy-header">
+      <div class="buddy-head-left">
+        <div class="buddy-icon-box">
+          <i data-lucide="bot" class="lucide-icon" style="stroke: #1B4332; width: 18px; height: 18px;"></i>
+        </div>
+        <div class="buddy-title-col">
+          <span class="buddy-title-line">SmartSpend AI</span>
+          <div class="buddy-status-sub" id="ai-status-indicator" title="Checking Gemini connectivity...">
+            <span class="status-dot"></span>
+            <span id="ai-status-text">Checking...</span>
+          </div>
+        </div>
+      </div>
+      <div class="buddy-head-actions">
+        <button type="button" id="clearChatBtn" class="btn-drawer-icon" title="Clear chat" aria-label="Clear chat">
+          <i data-lucide="trash-2" class="lucide-icon" style="width: 16px; height: 16px;"></i>
+        </button>
+        <button type="button" id="ai-drawer-close" class="btn-drawer-icon" title="Close Assistant" aria-label="Close Assistant">
+          <i data-lucide="x" class="lucide-icon" style="width: 16px; height: 16px;"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="ai-chat-body" class="ai-chat-stream">
+      <div class="chat-bubble assistant">
+        Hello! I'm your SmartSpend AI assistant. Walking back from the canteen or splitting food? You can tell me what you spent or ask whether you can afford a treat today.
+      </div>
+      <div class="ai-prompt-chips">
+        <button type="button" class="chip-prompt-btn" data-prompt="Log ₹30 chai with friends">
+          "Log ₹30 chai with friends"
+        </button>
+        <button type="button" class="chip-prompt-btn" data-prompt="Split ₹180 auto with 2 roommates">
+          "Split ₹180 auto with 2 roommates"
+        </button>
+        <button type="button" class="chip-prompt-btn" data-prompt="Can I afford a ₹200 treat today?">
+          "Can I afford a ₹200 treat today?"
+        </button>
+      </div>
+    </div>
+
+    <!-- Voice Listening Status Bar (Visible only when recording) -->
+    <div id="voice-active-banner" class="voice-status-banner" style="display: none;">
+      <span class="voice-pulse-ring"></span>
+      <span id="voice-status-label" class="voice-status-text">Listening... Speak naturally</span>
+      <span class="voice-hint-text">(tap mic when done)</span>
+    </div>
+
+    <form id="ai-chat-form" class="ai-chat-input-bar">
+      <button type="button" id="ai-voice-btn" class="btn-voice-chat" title="Hold or tap to speak" aria-label="1-Button Voice Assistant">
+        <i data-lucide="mic" class="lucide-icon"></i>
+      </button>
+      <input type="text" id="ai-chat-input" class="chat-text-input" placeholder="Type spend or tap mic to speak..." autocomplete="off">
+      <button type="submit" class="btn-send-chat" aria-label="Send message">
+        <i data-lucide="arrow-up" class="lucide-icon" style="stroke: #FFFFFF;"></i>
+      </button>
+    </form>
+  </aside>
+
+  <!-- ONLY Sleek Floating Dark Pill in Bottom Right -->
+  <button type="button" id="ai-buddy-fab" class="fab-ai-trigger" aria-label="Open SmartSpend AI">
+    <i data-lucide="bot" class="lucide-icon" style="stroke: #FFFFFF;"></i>
+    <span>Ask SmartSpend</span>
+  </button>
+
+  <!-- Client JavaScript -->
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

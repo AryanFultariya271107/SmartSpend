@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Impulse Cooldown — SmartSpend{% endblock %}
+
+{% block content %}
+<div class="page-top-header">
+  <div class="header-titles">
+    <h1>Impulse Cooldown</h1>
+    <div class="header-subtitle">48-hour pause buffer before non-essential purchases</div>
+  </div>
+</div>
+
+<!-- Top Savings Metric Card -->
+<section class="fintech-card" style="background-color: var(--brand-sage-bg); border-color: var(--brand-sage-border); margin-bottom: 24px;">
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+    <div>
+      <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--brand-sage-ink); margin-bottom: 4px;">
+        Total Impulse Money Saved
+      </div>
+      <div id="cooldown-total-saved" class="hero-amount tnum" style="font-size: 2.25rem; color: var(--brand-forest);">
+        ₹0.00
+      </div>
+    </div>
+    <div style="max-width: 480px; font-size: 0.8125rem; color: var(--brand-sage-ink); line-height: 1.5;">
+      Behavioral research indicates over 70% of impulse buying urges dissolve naturally after a 48-hour reflection period.
+    </div>
+  </div>
+</section>
+
+<div class="bento-grid">
+  <!-- Left: Park New Desire Form -->
+  <div class="bento-col">
+    <section class="fintech-card" aria-label="Park an Impulse Purchase">
+      <div class="card-heading-row">
+        <h2 class="card-title">
+          <i data-lucide="pause-circle" class="lucide-icon" style="stroke: var(--brand-forest);"></i>
+          <span>Park an Impulse Purchase</span>
+        </h2>
+        <span class="card-tag">48h Holding Tank</span>
+      </div>
+
+      <form id="cooldown-form">
+        <div style="margin-bottom: 14px;">
+          <label class="field-label" for="cooldown-name">Item Name or Desire</label>
+          <input type="text" id="cooldown-name" class="fintech-input" placeholder="e.g. Mechanical Keyboard, Steam Game, Shoes" required maxlength="100">
+        </div>
+
+        <div style="margin-bottom: 18px;">
+          <label class="field-label" for="cooldown-amount">Price (₹)</label>
+          <div class="input-affix-wrapper">
+            <span class="input-affix">₹</span>
+            <input type="number" id="cooldown-amount" class="fintech-input has-prefix tnum" placeholder="0.00" min="1" step="any" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-forest-primary">
+          <i data-lucide="clock" class="lucide-icon" style="stroke: #FFFFFF;"></i>
+          <span>Park for 48 Hours</span>
+        </button>
+      </form>
+    </section>
+  </div>
+
+  <!-- Right: Active & Resolved Cooldown Items Grid -->
+  <div class="bento-col">
+    <section class="fintech-card" aria-label="Active Cooldown Wishlist">
+      <div class="card-heading-row">
+        <h2 class="card-title">
+          <i data-lucide="list-ordered" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+          <span>Holding Tank</span>
+        </h2>
+      </div>
+
+      <div id="cooldown-items-list" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Populated dynamically by app.js -->
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

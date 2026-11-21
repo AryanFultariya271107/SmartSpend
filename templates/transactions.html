@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions — SmartSpend Ledger{% endblock %}
+
+{% block content %}
+<!-- Top Header -->
+<div class="page-top-header">
+  <div class="header-titles">
+    <h1>Transactions</h1>
+    <p class="header-subtitle">Search, filter, edit, or export your complete hostel expense ledger.</p>
+  </div>
+  <div class="header-actions">
+    <a href="/export/expenses" class="btn-sidebar-switch" style="width: auto; height: 38px; padding: 0 16px; text-decoration: none; display: inline-flex;" download>
+      <i data-lucide="download" style="width: 15px; height: 15px;"></i>
+      <span>Export CSV</span>
+    </a>
+  </div>
+</div>
+
+<!-- Ledger Management Card -->
+<div class="fintech-card" style="padding: 24px; margin-bottom: 24px;">
+  <!-- Filter Toolbar -->
+  <div class="transactions-filter-bar">
+    <!-- Search Input -->
+    <div class="tx-search-box">
+      <i data-lucide="search" class="lucide-icon" style="stroke: var(--ink-muted); width: 16px; height: 16px;"></i>
+      <input type="text" id="txSearchInput" class="fintech-input" placeholder="Search by note, category, or friend..." style="padding-left: 36px; height: 40px; font-size: 0.875rem;">
+    </div>
+
+    <!-- Date Range Filter Strip -->
+    <div class="tx-filter-group">
+      <span class="tx-group-title">Time Range:</span>
+      <div class="tx-pills-row" id="txRangePills" role="radiogroup" aria-label="Date Range">
+        <button type="button" class="tx-pill active" data-range="all">All Time</button>
+        <button type="button" class="tx-pill" data-range="today">Today</button>
+        <button type="button" class="tx-pill" data-range="7days">Past 7 Days</button>
+        <button type="button" class="tx-pill" data-range="month">This Month</button>
+      </div>
+    </div>
+
+    <!-- Category Filter Strip -->
+    <div class="tx-filter-group">
+      <span class="tx-group-title">Category:</span>
+      <div class="tx-pills-row" id="txCatPills" role="radiogroup" aria-label="Category Filter">
+        <button type="button" class="tx-pill active" data-category="all">All</button>
+        <button type="button" class="tx-pill" data-category="Food">Food</button>
+        <button type="button" class="tx-pill" data-category="Travel">Travel</button>
+        <button type="button" class="tx-pill" data-category="Hostel/PG">Hostel/PG</button>
+        <button type="button" class="tx-pill" data-category="Fun">Fun</button>
+        <button type="button" class="tx-pill" data-category="Misc">Misc</button>
+      </div>
+    </div>
+
+    <!-- Intent Filter Strip -->
+    <div class="tx-filter-group">
+      <span class="tx-group-title">Context / Intent:</span>
+      <div class="tx-pills-row" id="txMoodPills" role="radiogroup" aria-label="Intent Filter">
+        <button type="button" class="tx-pill active" data-mood="all">All</button>
+        <button type="button" class="tx-pill" data-mood="Essential">Essential</button>
+        <button type="button" class="tx-pill" data-mood="Craving">Craving</button>
+        <button type="button" class="tx-pill" data-mood="Friends">Friends</button>
+        <button type="button" class="tx-pill" data-mood="Impulse">Impulse</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Meta Bar -->
+  <div class="tx-summary-bar">
+    <div class="tx-summary-count">
+      <span id="txCountBadge" class="tnum" style="font-weight: 700; color: var(--ink-primary);">0 entries</span>
+      <span style="color: var(--ink-muted); margin: 0 6px;">•</span>
+      <span id="txFilteredTotal" class="tnum" style="font-weight: 700; color: var(--brand-forest);">Total: ₹0.00</span>
+    </div>
+  </div>
+
+  <!-- Ledger Table -->
+  <div class="ledger-table-wrap">
+    <table class="fintech-ledger-table" aria-label="Expense Ledger Table">
+      <thead>
+        <tr>
+          <th style="width: 110px;">Date</th>
+          <th>Description / Note</th>
+          <th style="width: 120px;">Category</th>
+          <th style="width: 120px;">Intent</th>
+          <th style="width: 130px;">Split Status</th>
+          <th style="width: 110px; text-align: right;">Amount</th>
+          <th style="width: 90px; text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="txTableBody">
+        <!-- Rendered by JS -->
+      </tbody>
+    </table>
+
+    <div id="txEmptyState" class="ledger-empty-state" style="display: none;">
+      <i data-lucide="inbox" style="width: 32px; height: 32px; stroke: var(--border-strong); margin-bottom: 8px;"></i>
+      <div style="font-size: 0.9375rem; font-weight: 700; color: var(--ink-primary);">No matching transactions</div>
+      <div style="font-size: 0.8125rem; color: var(--ink-muted); margin-top: 4px;">Adjust your filters or search term to see records.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Expense Modal -->
+<div id="editExpenseModal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+      <h2 id="modal-edit-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Edit Transaction</h2>
+      <button type="button" id="closeEditModalBtn" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);">
+        <i data-lucide="x" class="lucide-icon"></i>
+      </button>
+    </div>
+
+    <form id="editExpenseForm">
+      <input type="hidden" id="editExpenseId">
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 12px;">
+        <div class="field-group">
+          <label class="field-label" for="editAmount">Amount (₹)</label>
+          <div class="input-affix-wrapper">
+            <span class="input-affix">₹</span>
+            <input type="number" id="editAmount" class="fintech-input has-prefix tnum" step="any" min="1" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editDate">Date</label>
+          <input type="date" id="editDate" class="fintech-input tnum" required>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label" for="editNote">Memory Note</label>
+        <input type="text" id="editNote" class="fintech-input" maxlength="60" placeholder="e.g. Chai w/ Raj">
+      </div>
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 14px;">
+        <div class="field-group">
+          <label class="field-label" for="editCategory">Category</label>
+          <select id="editCategory" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Hostel/PG">Hostel/PG</option>
+            <option value="Fun">Fun</option>
+            <option value="Misc">Misc</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editMood">Context / Intent</label>
+          <select id="editMood" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Essential">Essential</option>
+            <option value="Craving">Craving</option>
+            <option value="Friends">Friends</option>
+            <option value="Impulse">Impulse</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Split toggle in edit modal -->
+      <div class="split-wrapper" style="margin-bottom: 18px;">
+        <div class="split-header-row">
+          <label for="editSplitToggle" class="split-toggle-label">
+            <input type="checkbox" id="editSplitToggle" class="switch-input">
+            <span>Split expense with friends?</span>
+          </label>
+        </div>
+
+        <div id="editSplitControls" class="split-detail-row" style="display: none; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.8125rem; color: var(--ink-muted);">Split between:</span>
+            <div class="stepper-control">
+              <button type="button" id="editSplitDecBtn" class="stepper-btn">−</button>
+              <span id="editSplitCountVal" class="tnum" style="font-weight: 800; min-width: 20px; text-align: center;">2</span>
+              <button type="button" id="editSplitIncBtn" class="stepper-btn">+</button>
+            </div>
+          </div>
+          <div>
+            <input type="text" id="editSplitWith" class="fintech-input" placeholder="Names (e.g. Raj & Amit)" style="height: 36px; font-size: 0.8125rem;">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" id="cancelEditModalBtn" class="preset-chip-btn">Cancel</button>
+        <button type="submit" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 40px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

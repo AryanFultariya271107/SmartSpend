@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}SmartSpend — Personal Budget Tracker Overview{% endblock %}
+
+{% block content %}
+<!-- Top Page Header -->
+<div class="page-top-header">
+  <div class="header-titles">
+    <h1>Overview</h1>
+    <p id="header-date" class="header-subtitle">Loading cycle dates...</p>
+  </div>
+  <div class="header-actions">
+    <!-- Streak Pill -->
+    <div class="streak-pill" aria-label="Daily logging streak">
+      <i data-lucide="flame" class="lucide-icon" style="stroke: var(--brand-forest); width: 14px; height: 14px;"></i>
+      <span id="streak-val" class="tnum">0 day streak</span>
+    </div>
+
+    <!-- Solid Forest-Green + Log Expense Button -->
+    <a href="/log-expense" class="btn-forest-primary" style="width: auto; height: 38px; padding: 0 16px; text-decoration: none; font-size: 0.8125rem;">
+      <i data-lucide="plus" class="lucide-icon" style="stroke: #FFFFFF; width: 15px; height: 15px;"></i>
+      <span>Log Expense</span>
+    </a>
+  </div>
+</div>
+
+<!-- =========================================================================
+     ROW 1 — TOP SUMMARY 12-COL GRID (Hero span 7, Snapshot span 5)
+     ========================================================================= -->
+<div class="overview-row-1">
+  <!-- 1. Safe-to-Spend Today Hero Card (span 7) -->
+  <section class="fintech-card hero-card grid-col-7" aria-label="Safe to Spend Calculation">
+    <div class="hero-top-row">
+      <div class="hero-eyebrow-label">Safe to Spend Today</div>
+      <div id="hero-status-pill" class="hero-status-pill status-on-track">
+        <i data-lucide="shield-check" class="lucide-icon" style="width: 13px; height: 13px;"></i>
+        <span id="hero-status-text">On Track</span>
+      </div>
+    </div>
+
+    <div class="hero-figure-row">
+      <span class="hero-currency">₹</span>
+      <span id="safe-today-val" class="hero-amount tnum">0.00</span>
+      <span class="hero-suffix">safe today</span>
+    </div>
+
+    <!-- Solid Rounded Progress Bar & % Used Meta -->
+    <div class="hero-progress-section">
+      <div class="hero-progress-meta">
+        <span>Monthly Pace</span>
+        <span id="used-pct-label" class="tnum font-bold">0.0% used</span>
+      </div>
+      <div class="hero-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Monthly budget consumed">
+        <div id="budget-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+      </div>
+    </div>
+
+    <!-- 3-Column Mini KPI Strip -->
+    <div class="hero-kpi-strip">
+      <div class="hero-kpi-col">
+        <span class="hero-kpi-label">Monthly Budget</span>
+        <span id="kpi-budget" class="hero-kpi-val tnum">₹0</span>
+      </div>
+      <div class="hero-kpi-col">
+        <span class="hero-kpi-label">Spent So Far</span>
+        <span id="kpi-spent" class="hero-kpi-val tnum">₹0.00</span>
+      </div>
+      <div class="hero-kpi-col">
+        <span class="hero-kpi-label">Remaining</span>
+        <span id="kpi-remaining" class="hero-kpi-val tnum">₹0.00</span>
+      </div>
+    </div>
+
+    <!-- Empathetic Coaching Note -->
+    <div id="coach-box" class="hero-coach-note" role="status">
+      <i data-lucide="info" class="lucide-icon" style="stroke: var(--brand-forest); width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px;"></i>
+      <span id="coach-message">Calculating your calm daily baseline...</span>
+    </div>
+  </section>
+
+  <!-- 2. Quick Snapshot Card (Monthly Pulse) (span 5) -->
+  <section class="fintech-card grid-col-5" aria-label="Monthly Pulse Snapshot">
+    <div class="card-heading-row">
+      <h2 class="card-title">
+        <i data-lucide="activity" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+        <span>Quick Snapshot</span>
+      </h2>
+      <span class="card-tag">Monthly Pulse</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background-color: var(--bg-subtle); border-radius: var(--radius-input); border: 1px solid var(--border-hairline);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--ink-muted); font-weight: 600;">Top Spending Category</div>
+          <div id="snapshot-top-cat" style="font-size: 0.9375rem; font-weight: 700; color: var(--ink-primary); margin-top: 2px;">Loading...</div>
+        </div>
+        <a href="#insights-section" class="preset-chip-btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">View Breakdown →</a>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background-color: var(--bg-subtle); border-radius: var(--radius-input); border: 1px solid var(--border-hairline);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--ink-muted); font-weight: 600;">Pending Splits Owed to You</div>
+          <div id="snapshot-pending-splits" class="tnum" style="font-size: 0.9375rem; font-weight: 700; color: var(--brand-forest); margin-top: 2px;">₹0.00</div>
+        </div>
+        <a href="/splits-bills" class="preset-chip-btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">Manage Splits →</a>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background-color: var(--bg-subtle); border-radius: var(--radius-input); border: 1px solid var(--border-hairline);">
+        <div>
+          <div style="font-size: 0.75rem; color: var(--ink-muted); font-weight: 600;">Impulse Money Saved</div>
+          <div id="snapshot-cooldown-saved" class="tnum" style="font-size: 0.9375rem; font-weight: 700; color: var(--ink-primary); margin-top: 2px;">₹0.00</div>
+        </div>
+        <a href="/cooldown" class="preset-chip-btn" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">Cooldown Tank →</a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- =========================================================================
+     ROW 2 — INSIGHTS ANALYTICS SECTION (Breakdown span 5, Trend span 7)
+     ========================================================================= -->
+<div id="insights-section" class="overview-row-2">
+  <!-- 1. Spending Breakdown Card (span 5) -->
+  <section class="fintech-card grid-col-5" style="padding: 24px;">
+    <div class="card-heading-row" style="margin-bottom: 14px;">
+      <h2 class="card-title">
+        <i data-lucide="pie-chart" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+        <span>Spending Breakdown</span>
+      </h2>
+      <div class="segmented-control" role="tablist">
+        <button type="button" id="insightsTabCatBtn" class="segmented-btn active" role="tab" aria-selected="true">By Category</button>
+        <button type="button" id="insightsTabMoodBtn" class="segmented-btn" role="tab" aria-selected="false">By Intent</button>
+      </div>
+    </div>
+
+    <!-- Doughnut Canvas with Center Callout -->
+    <div class="doughnut-chart-wrapper">
+      <canvas id="insightsDoughnutChart"></canvas>
+      <div class="doughnut-center-callout" aria-hidden="true">
+        <div id="doughnut-center-amt" class="doughnut-center-amt tnum">₹0</div>
+        <div class="doughnut-center-sub">Total</div>
+      </div>
+    </div>
+
+    <!-- Itemized Breakdown List -->
+    <div class="card-heading-row" style="margin-bottom: 8px; padding-top: 12px; border-top: 1px solid var(--border-hairline);">
+      <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);">Itemized Breakdown</span>
+      <span style="font-size: 0.75rem; color: var(--ink-muted);">Share of Total</span>
+    </div>
+    <div id="insightsItemList" style="display: flex; flex-direction: column; gap: 6px;">
+      <!-- Populated dynamically by app.js -->
+    </div>
+  </section>
+
+  <!-- 2. 7-Day Daily Spending Trend Card (span 7) -->
+  <section class="fintech-card grid-col-7" style="padding: 24px;">
+    <div class="card-heading-row" style="margin-bottom: 10px;">
+      <h2 class="card-title">
+        <i data-lucide="bar-chart-2" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+        <span>7-Day Daily Trend</span>
+      </h2>
+      <div class="streak-pill" style="font-size: 0.75rem; padding: 4px 8px;">
+        <span style="color: var(--ink-muted);">Daily Target:</span>
+        <strong id="trendSafeBaseline" class="tnum" style="color: var(--ink-primary); margin-left: 4px;">₹0.00</strong>
+      </div>
+    </div>
+
+    <!-- Compact 3-Stat Strip at Top of Card -->
+    <div class="trend-stat-strip">
+      <div class="trend-stat-item">
+        <span class="trend-stat-label">Daily Avg</span>
+        <span id="kpiDailyAvg" class="trend-stat-val tnum">₹0.00</span>
+      </div>
+      <div class="trend-stat-item" style="border-left: 1px solid var(--border-hairline); border-right: 1px solid var(--border-hairline); padding: 0 12px;">
+        <span class="trend-stat-label">Essential Ratio</span>
+        <span id="kpiRatio" class="trend-stat-val tnum">0% / 0%</span>
+      </div>
+      <div class="trend-stat-item">
+        <span class="trend-stat-label">Highest Day</span>
+        <span id="kpiHighestDayAmt" class="trend-stat-val tnum">₹0.00</span>
+      </div>
+    </div>
+
+    <p style="font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 12px;">
+      Daily spends compared to your safe daily allowance baseline.
+    </p>
+
+    <!-- Bar Chart Canvas -->
+    <div style="position: relative; height: 230px; width: 100%;">
+      <canvas id="insightsTrendChart"></canvas>
+    </div>
+  </section>
+</div>
+
+<!-- =========================================================================
+     ROW 3 — HABITS & RECENT ACTIVITY (Habits span 5, Activity span 7)
+     ========================================================================= -->
+<div class="overview-row-3">
+  <!-- 1. Monthly Habit Stories Card (span 5) -->
+  <section class="fintech-card grid-col-5" style="padding: 24px;">
+    <div class="card-heading-row" style="margin-bottom: 12px;">
+      <h2 class="card-title">
+        <i data-lucide="compass" class="lucide-icon" style="stroke: var(--brand-forest);"></i>
+        <span>Habit Stories</span>
+      </h2>
+      <span class="card-tag">Automated Synthesis</span>
+    </div>
+
+    <div id="insightsStoriesList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+      <!-- Populated dynamically by app.js -->
+    </div>
+
+    <!-- Month-End Pace Projection Footer Strip -->
+    <div id="habitPaceProjection" class="habit-projection-strip">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="trending-up" class="lucide-icon" style="stroke: var(--brand-forest); width: 15px; height: 15px; flex-shrink: 0;"></i>
+        <span style="font-size: 0.75rem; font-weight: 700; color: var(--ink-primary); text-transform: uppercase; letter-spacing: 0.05em;">Month-End Pace Projection</span>
+      </div>
+      <div id="habitProjectionText" style="font-size: 0.8125rem; color: var(--ink-secondary); margin-top: 6px; line-height: 1.45;">
+        Tracking your daily velocity to project your month-end balance...
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Recent Activity Card (span 7) -->
+  <section class="fintech-card grid-col-7" style="padding: 24px;" aria-label="Latest Transactions Ledger">
+    <div class="card-heading-row" style="margin-bottom: 12px;">
+      <h2 class="card-title">
+        <i data-lucide="receipt" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+        <span>Recent Activity</span>
+      </h2>
+      <a href="/transactions" style="font-size: 0.75rem; font-weight: 700; color: var(--brand-forest); text-decoration: none;">View all →</a>
+    </div>
+
+    <!-- Recent 5 List Container -->
+    <div id="recent-5-list-container" style="display: flex; flex-direction: column;">
+      <!-- Populated dynamically by app.js -->
+    </div>
+  </section>
+</div>
+
+<!-- Shared Edit Transaction Modal (for inline edits from Recent Activity) -->
+<div id="editExpenseModal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+      <h2 id="modal-edit-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Edit Transaction</h2>
+      <button type="button" id="closeEditModalBtn" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);">
+        <i data-lucide="x" class="lucide-icon"></i>
+      </button>
+    </div>
+
+    <form id="editExpenseForm">
+      <input type="hidden" id="editExpenseId">
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 12px;">
+        <div class="field-group">
+          <label class="field-label" for="editAmount">Amount (₹)</label>
+          <div class="input-affix-wrapper">
+            <span class="input-affix">₹</span>
+            <input type="number" id="editAmount" class="fintech-input has-prefix tnum" step="any" min="1" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editDate">Date</label>
+          <input type="date" id="editDate" class="fintech-input tnum" required>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label" for="editNote">Memory Note</label>
+        <input type="text" id="editNote" class="fintech-input" maxlength="60" placeholder="e.g. Chai w/ Raj">
+      </div>
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 14px;">
+        <div class="field-group">
+          <label class="field-label" for="editCategory">Category</label>
+          <select id="editCategory" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Food">Food</option>
+            <option value="Travel">Travel</option>
+            <option value="Hostel/PG">Hostel/PG</option>
+            <option value="Fun">Fun</option>
+            <option value="Misc">Misc</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editMood">Context / Intent</label>
+          <select id="editMood" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Essential">Essential</option>
+            <option value="Craving">Craving</option>
+            <option value="Friends">Friends</option>
+            <option value="Impulse">Impulse</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Split toggle in edit modal -->
+      <div class="split-wrapper" style="margin-bottom: 18px;">
+        <div class="split-header-row">
+          <label for="editSplitToggle" class="split-toggle-label">
+            <input type="checkbox" id="editSplitToggle" class="switch-input">
+            <span>Split expense with friends?</span>
+          </label>
+        </div>
+        <div id="editSplitControls" class="split-expand-body" style="display: none; margin-top: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+            <span style="font-size: 0.8125rem; font-weight: 600; color: var(--ink-secondary);">Total People (including you):</span>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <button type="button" id="editSplitDecBtn" class="stepper-btn">-</button>
+              <span id="editSplitCountVal" class="tnum" style="font-weight: 700; width: 24px; text-align: center;">2</span>
+              <button type="button" id="editSplitIncBtn" class="stepper-btn">+</button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="editSplitWith">Split With (Friend / Roommate Names)</label>
+            <input type="text" id="editSplitWith" class="fintech-input" placeholder="e.g. Aman, Priya" maxlength="100">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" id="cancelEditModalBtn" class="btn-subtle" style="width: auto; padding: 0 16px; height: 38px;">Cancel</button>
+        <button type="submit" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 38px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

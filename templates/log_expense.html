@@ -1,0 +1,408 @@
+{% extends "base.html" %}
+
+{% block title %}Log Expense — SmartSpend Rapid Logger{% endblock %}
+
+{% block content %}
+<!-- Top Page Header -->
+<div class="page-top-header">
+  <div class="header-titles">
+    <h1>Log an Expense</h1>
+    <p class="header-subtitle">Rapid entry with customizable presets and editable categories.</p>
+  </div>
+  <div class="header-actions">
+    <div class="streak-pill" aria-label="Daily logging streak">
+      <i data-lucide="flame" class="lucide-icon" style="stroke: var(--brand-forest); width: 14px; height: 14px;"></i>
+      <span id="streak-val" class="tnum">0 day streak</span>
+    </div>
+    <label class="instant-save-label" title="When enabled, tapping a preset logs it immediately without filling the form">
+      <input type="checkbox" id="instant-save-toggle" class="switch-input">
+      <span>1-Tap Instant Save</span>
+    </label>
+    <a href="/transactions" class="btn-sidebar-switch" style="width: auto; height: 38px; padding: 0 16px; text-decoration: none; display: inline-flex;">
+      <i data-lucide="receipt-text" style="width: 15px; height: 15px;"></i>
+      <span>View Ledger →</span>
+    </a>
+  </div>
+</div>
+
+<!-- 2-Column Dedicated Log Layout -->
+<div class="log-expense-grid">
+  <!-- Left Column: Rapid Logger Card -->
+  <section class="fintech-card" style="padding: 24px;" aria-label="Rapid Expense Logger">
+    <!-- Header with sliders-horizontal preset button -->
+    <div class="card-heading-row" style="margin-bottom: 14px;">
+      <h2 class="card-title">
+        <i data-lucide="zap" class="lucide-icon" style="stroke: var(--brand-forest);"></i>
+        <span>Rapid Entry</span>
+      </h2>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" id="log-page-voice-btn" class="btn-voice-shortcut" title="Voice Expense Entry" aria-label="Voice Expense Entry">
+          <i data-lucide="mic" class="lucide-icon" style="width: 14px; height: 14px;"></i>
+          <span>Voice Log</span>
+        </button>
+        <button type="button" id="open-preset-modal-btn" class="btn-table-action" title="Customize 1-Tap Presets" aria-label="Customize 1-Tap Presets">
+          <i data-lucide="sliders-horizontal" class="lucide-icon" style="width: 15px; height: 15px;"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Customizable Preset Chips -->
+    <div id="presets-strip-container" class="presets-strip" aria-label="Hostel Spending Presets">
+      <!-- Rendered dynamically by app.js from localStorage or defaults -->
+    </div>
+
+    <!-- Logger Form -->
+    <form id="rapid-logger-form">
+      <!-- Inputs for Amount and Date -->
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 6px;">
+        <div class="field-group">
+          <label class="field-label" for="log-amount">Amount (₹)</label>
+          <div class="input-affix-wrapper">
+            <span class="input-affix large-affix">₹</span>
+            <input type="number" id="log-amount" class="fintech-input has-prefix large-amount-input tnum" placeholder="0.00" min="1" step="any" required autofocus>
+          </div>
+          <!-- Quick-Bump Pills Underneath Amount -->
+          <div class="quick-bump-row" aria-label="Quick amount increments">
+            <button type="button" class="bump-pill" data-bump="10">+₹10</button>
+            <button type="button" class="bump-pill" data-bump="20">+₹20</button>
+            <button type="button" class="bump-pill" data-bump="50">+₹50</button>
+            <button type="button" class="bump-pill" data-bump="100">+₹100</button>
+            <button type="button" class="bump-pill clear-pill" data-bump="clear">Clear</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="log-date">Expense Date</label>
+          <input type="date" id="log-date" class="fintech-input tnum" required>
+        </div>
+      </div>
+
+      <!-- Memory Note -->
+      <div class="field-group" style="margin-top: 14px; margin-bottom: 14px;">
+        <label class="field-label" for="log-note">Memory Note (Optional)</label>
+        <input type="text" id="log-note" class="fintech-input" placeholder="e.g. Canteen w/ Raj" maxlength="60">
+      </div>
+
+      <!-- Category Selector with Dynamic Pills & Manage Button -->
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <span class="field-label" style="margin-bottom: 0;">Category</span>
+          <button type="button" id="open-manage-categories-btn" class="pill-add-btn" style="padding: 2px 8px; font-size: 0.75rem;" title="Manage Categories">
+            <i data-lucide="settings-2" class="lucide-icon" style="width: 12px; height: 12px;"></i>
+            <span>Manage</span>
+          </button>
+        </div>
+        <div id="category-pills-container" class="pill-grid" role="radiogroup" aria-label="Category">
+          <!-- Rendered dynamically by app.js from /api/categories -->
+        </div>
+      </div>
+
+      <!-- Mood & Intent Tag Selector -->
+      <div style="margin-bottom: 14px;">
+        <span class="field-label">Context / Intent</span>
+        <div class="pill-grid" role="radiogroup" aria-label="Mood Tag">
+          <div class="pill-check-option">
+            <input type="radio" id="mood-essential" name="mood_tag" value="Essential" checked>
+            <label for="mood-essential" class="pill-check-label">
+              <i data-lucide="check-circle" class="lucide-icon" style="width: 14px; height: 14px;"></i>
+              <span>Essential</span>
+            </label>
+          </div>
+          <div class="pill-check-option">
+            <input type="radio" id="mood-craving" name="mood_tag" value="Craving">
+            <label for="mood-craving" class="pill-check-label">
+              <i data-lucide="heart" class="lucide-icon" style="width: 14px; height: 14px;"></i>
+              <span>Craving</span>
+            </label>
+          </div>
+          <div class="pill-check-option">
+            <input type="radio" id="mood-friends" name="mood_tag" value="Friends">
+            <label for="mood-friends" class="pill-check-label">
+              <i data-lucide="users" class="lucide-icon" style="width: 14px; height: 14px;"></i>
+              <span>Friends</span>
+            </label>
+          </div>
+          <div class="pill-check-option">
+            <input type="radio" id="mood-impulse" name="mood_tag" value="Impulse">
+            <label for="mood-impulse" class="pill-check-label">
+              <i data-lucide="zap" class="lucide-icon" style="width: 14px; height: 14px;"></i>
+              <span>Impulse</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- 1-Tap Roommate Split Toggle -->
+      <div class="split-wrapper" style="margin-bottom: 18px;">
+        <div class="split-header-row">
+          <label for="split-toggle" class="split-toggle-label">
+            <input type="checkbox" id="split-toggle" class="switch-input">
+            <span>Split with friends or roommates?</span>
+          </label>
+          <span id="split-preview-text" class="split-share-text tnum"></span>
+        </div>
+
+        <div id="split-controls" class="split-detail-row" style="display: none; flex-direction: column; gap: 8px; align-items: stretch; margin-top: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.8125rem; color: var(--ink-muted); font-weight: 500;">Divide total equally among:</span>
+            <div class="stepper-control">
+              <button type="button" id="split-dec-btn" class="stepper-btn" aria-label="Decrease split count">−</button>
+              <span id="split-count-val" class="tnum" style="font-weight: 800; font-size: 0.9375rem; min-width: 20px; text-align: center;">2</span>
+              <button type="button" id="split-inc-btn" class="stepper-btn" aria-label="Increase split count">+</button>
+            </div>
+          </div>
+
+          <div>
+            <input type="text" id="split-with-input" class="fintech-input" placeholder="With whom? (e.g. Raj &amp; Amit)" style="height: 36px; font-size: 0.8125rem;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button with Dynamic Impact -->
+      <button type="submit" id="logger-submit-btn" class="btn-forest-primary">
+        <i data-lucide="check" class="lucide-icon" style="stroke: #FFFFFF;"></i>
+        <span id="logger-submit-text">Save Expense</span>
+      </button>
+    </form>
+  </section>
+
+  <!-- Right Column: Live Today's Feedback Panel -->
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <!-- 1. Live Safe-to-Spend Mini Card -->
+    <section class="fintech-card" style="padding: 20px;" aria-label="Live Safe to Spend Feedback">
+      <div class="card-heading-row" style="margin-bottom: 8px;">
+        <h2 class="card-title">
+          <i data-lucide="shield-check" class="lucide-icon" style="stroke: var(--brand-forest);"></i>
+          <span>Live Safe-to-Spend</span>
+        </h2>
+        <span class="card-tag">Real-Time Sync</span>
+      </div>
+
+      <div style="display: flex; align-items: baseline; gap: 6px; margin: 8px 0 4px;">
+        <span style="font-size: 1.15rem; font-weight: 700; color: var(--ink-muted);">₹</span>
+        <span id="live-safe-today-val" class="hero-amount tnum" style="font-size: 2rem; font-weight: 800; color: var(--ink-primary);">0.00</span>
+        <span style="font-size: 0.8125rem; font-weight: 600; color: var(--ink-muted);">safe today</span>
+      </div>
+
+      <div style="font-size: 0.8125rem; color: var(--ink-muted); margin-bottom: 12px;">
+        Spent today so far: <strong id="live-spent-today-val" class="tnum" style="color: var(--ink-primary);">₹0.00</strong>
+      </div>
+
+      <div id="live-coach-box" class="hero-coach-note" style="margin-top: 0; padding: 10px 12px; font-size: 0.75rem;">
+        <i data-lucide="info" class="lucide-icon" style="stroke: var(--brand-forest); width: 14px; height: 14px;"></i>
+        <span id="live-coach-message">Calculating today's pace...</span>
+      </div>
+    </section>
+
+    <!-- 2. Logged Today Card -->
+    <section class="fintech-card" style="padding: 20px;" aria-label="Expenses Logged Today">
+      <div class="card-heading-row" style="margin-bottom: 10px;">
+        <h2 class="card-title">
+          <i data-lucide="calendar" class="lucide-icon" style="stroke: var(--ink-secondary);"></i>
+          <span>Logged Today</span>
+        </h2>
+        <span id="today-count-badge" class="tnum" style="font-size: 0.75rem; font-weight: 700; color: var(--ink-muted);">0 entries</span>
+      </div>
+
+      <!-- Today's List Container -->
+      <div id="today-expenses-container" class="ledger-list">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <!-- Empty State -->
+      <div id="today-empty-state" class="ledger-empty-state" style="padding: 24px 12px; display: none;">
+        <i data-lucide="coffee" style="width: 28px; height: 28px; stroke: var(--border-strong); margin-bottom: 6px;"></i>
+        <div style="font-size: 0.875rem; font-weight: 700; color: var(--ink-primary);">Nothing logged today yet</div>
+        <div style="font-size: 0.75rem; color: var(--ink-muted); margin-top: 2px;">Tap a preset on the left or enter a spend to begin.</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- Category Manager Modal -->
+<div id="manage-categories-modal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-category-title">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+      <div>
+        <h2 id="modal-category-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Manage Categories</h2>
+        <p style="font-size: 0.8125rem; color: var(--ink-muted); margin-top: 2px;">Add custom categories or customize colors &amp; icons.</p>
+      </div>
+      <button type="button" id="close-manage-categories-btn" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);">
+        <i data-lucide="x" class="lucide-icon"></i>
+      </button>
+    </div>
+
+    <!-- Quick Add Section -->
+    <div style="background-color: var(--bg-subtle); padding: 14px; border-radius: var(--radius-input); border: 1px solid var(--border-hairline); margin-bottom: 16px;">
+      <div style="font-size: 0.75rem; font-weight: 700; color: var(--ink-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+        Add New Category
+      </div>
+      <div style="margin-bottom: 10px;">
+        <input type="text" id="new-cat-name" class="fintech-input" placeholder="Name (e.g. Laundry, Gym, Books)" maxlength="20" style="height: 38px;">
+      </div>
+
+      <!-- 8-Icon Visual Picker Grid -->
+      <div style="font-size: 0.6875rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; margin-bottom: 6px;">Choose Icon</div>
+      <div class="icon-picker-grid" id="new-cat-icon-picker">
+        <button type="button" class="icon-picker-btn selected" data-icon="shirt" title="shirt"><i data-lucide="shirt" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="book-open" title="book-open"><i data-lucide="book-open" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="dumbbell" title="dumbbell"><i data-lucide="dumbbell" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="pill" title="pill"><i data-lucide="pill" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="smartphone" title="smartphone"><i data-lucide="smartphone" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="coffee" title="coffee"><i data-lucide="coffee" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="shopping-bag" title="shopping-bag"><i data-lucide="shopping-bag" style="width: 16px; height: 16px;"></i></button>
+        <button type="button" class="icon-picker-btn" data-icon="tag" title="tag"><i data-lucide="tag" style="width: 16px; height: 16px;"></i></button>
+      </div>
+
+      <!-- 6-Color Swatch Picker -->
+      <div style="font-size: 0.6875rem; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; margin-bottom: 6px;">Choose Color</div>
+      <div class="color-picker-grid" id="new-cat-color-picker">
+        <button type="button" class="color-picker-swatch selected" data-color="#1B4332" style="background-color: #1B4332;" title="Deep Forest"></button>
+        <button type="button" class="color-picker-swatch" data-color="#4A6FA5" style="background-color: #4A6FA5;" title="Slate Blue"></button>
+        <button type="button" class="color-picker-swatch" data-color="#C9A66B" style="background-color: #C9A66B;" title="Warm Sand"></button>
+        <button type="button" class="color-picker-swatch" data-color="#C06C52" style="background-color: #C06C52;" title="Muted Terracotta"></button>
+        <button type="button" class="color-picker-swatch" data-color="#52796F" style="background-color: #52796F;" title="Sage Pine"></button>
+        <button type="button" class="color-picker-swatch" data-color="#7C6A9A" style="background-color: #7C6A9A;" title="Muted Amethyst"></button>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="button" id="add-category-btn" class="btn-forest-primary" style="width: auto; padding: 0 16px; height: 36px; font-size: 0.8125rem;">
+          <i data-lucide="plus" style="width: 14px; height: 14px; stroke: #FFFFFF;"></i>
+          <span>Add Category</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Categories List -->
+    <div style="font-size: 0.75rem; font-weight: 700; color: var(--ink-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">
+      Active Categories
+    </div>
+    <div id="categories-manager-list" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+      <!-- Populated dynamically by app.js -->
+    </div>
+
+    <div style="display: flex; justify-content: flex-end;">
+      <button type="button" id="done-categories-btn" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 38px;">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preset Customizer Modal -->
+<div id="preset-customizer-modal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-preset-title">
+  <div class="modal-card" style="max-width: 520px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+      <div>
+        <h2 id="modal-preset-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Customize 1-Tap Presets</h2>
+        <p style="font-size: 0.8125rem; color: var(--ink-muted); margin-top: 2px;">
+          Configure 2 to 6 frequent hostel spends. Saved in your browser.
+        </p>
+      </div>
+      <button type="button" id="close-preset-modal" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);">
+        <i data-lucide="x" class="lucide-icon"></i>
+      </button>
+    </div>
+
+    <form id="preset-customizer-form">
+      <div id="preset-inputs-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
+        <!-- Preset editing rows rendered dynamically by app.js -->
+      </div>
+
+      <div style="margin-bottom: 18px;">
+        <button type="button" id="add-preset-row-btn" class="preset-chip-btn" style="width: 100%; justify-content: center; border-style: dashed;">
+          <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+          <span>Add Preset (Up to 6)</span>
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: space-between; align-items: center;">
+        <button type="button" id="reset-default-presets-btn" class="preset-chip-btn">Reset Defaults</button>
+        <button type="submit" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 38px;">Save Presets</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Expense Modal (Reused for Logged Today Inline Edit) -->
+<div id="editExpenseModal" class="modal-layer" role="dialog" aria-modal="true" aria-labelledby="modal-edit-title">
+  <div class="modal-card" style="max-width: 480px;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+      <h2 id="modal-edit-title" style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.02em;">Edit Transaction</h2>
+      <button type="button" id="closeEditModalBtn" style="background: none; border: none; cursor: pointer; color: var(--ink-muted);">
+        <i data-lucide="x" class="lucide-icon"></i>
+      </button>
+    </div>
+
+    <form id="editExpenseForm">
+      <input type="hidden" id="editExpenseId">
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 12px;">
+        <div class="field-group">
+          <label class="field-label" for="editAmount">Amount (₹)</label>
+          <div class="input-affix-wrapper">
+            <span class="input-affix">₹</span>
+            <input type="number" id="editAmount" class="fintech-input has-prefix tnum" step="any" min="1" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editDate">Date</label>
+          <input type="date" id="editDate" class="fintech-input tnum" required>
+        </div>
+      </div>
+
+      <div class="field-group" style="margin-bottom: 12px;">
+        <label class="field-label" for="editNote">Memory Note</label>
+        <input type="text" id="editNote" class="fintech-input" maxlength="60" placeholder="e.g. Chai w/ Raj">
+      </div>
+
+      <div class="form-grid-row" style="grid-template-columns: 1fr 1fr; margin-bottom: 14px;">
+        <div class="field-group">
+          <label class="field-label" for="editCategory">Category</label>
+          <select id="editCategory" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <!-- Populated dynamically by app.js -->
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="editMood">Context / Intent</label>
+          <select id="editMood" class="fintech-input" style="height: 40px; font-weight: 600;">
+            <option value="Essential">Essential</option>
+            <option value="Craving">Craving</option>
+            <option value="Friends">Friends</option>
+            <option value="Impulse">Impulse</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Split toggle in edit modal -->
+      <div class="split-wrapper" style="margin-bottom: 18px;">
+        <div class="split-header-row">
+          <label for="editSplitToggle" class="split-toggle-label">
+            <input type="checkbox" id="editSplitToggle" class="switch-input">
+            <span>Split expense with friends?</span>
+          </label>
+        </div>
+
+        <div id="editSplitControls" class="split-detail-row" style="display: none; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 0.8125rem; color: var(--ink-muted);">Split between:</span>
+            <div class="stepper-control">
+              <button type="button" id="editSplitDecBtn" class="stepper-btn">−</button>
+              <span id="editSplitCountVal" class="tnum" style="font-weight: 800; min-width: 20px; text-align: center;">2</span>
+              <button type="button" id="editSplitIncBtn" class="stepper-btn">+</button>
+            </div>
+          </div>
+          <div>
+            <input type="text" id="editSplitWith" class="fintech-input" placeholder="Names (e.g. Raj & Amit)" style="height: 36px; font-size: 0.8125rem;">
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 8px; justify-content: flex-end;">
+        <button type="button" id="cancelEditModalBtn" class="preset-chip-btn">Cancel</button>
+        <button type="submit" class="btn-forest-primary" style="width: auto; padding: 0 18px; height: 40px;">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
