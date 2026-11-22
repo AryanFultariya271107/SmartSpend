@@ -33,7 +33,6 @@ expence traker/
 ├── .env                       # Local secrets (never committed to git)
 ├── .gitignore                 # Excludes .env, database.db, .venv/, __pycache__/, charts/
 ├── README.md                  # Complete project documentation & guide
-├── PRD_Docs/                  # Product Requirements Document & design specifications
 ├── analysis/
 │   ├── validate_stats.py      # Statistical evaluation suite (paired t-test, Cohen's d, SUS)
 │   ├── baseline_survey.csv    # Stage 2 student baseline survey dataset (n=35)
