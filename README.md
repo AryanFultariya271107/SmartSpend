@@ -1,4 +1,4 @@
-Z# SmartSpend: AI-Powered Personal Budget Tracker
+# SmartSpend: AI-Powered Personal Budget Tracker
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.x-green.svg)](https://flask.palletsprojects.com/)
@@ -17,7 +17,6 @@ SmartSpend is an integrated personal finance web application built to eliminate 
 - **Google AI Studio (Gemini 2.5 Flash):** Natural language expense logging and financial coaching via the official `google-genai` Python SDK, with multi-turn chat, context-aware budget guidance, and an offline rule-based fallback engine.
 - **1-Button Voice Logging:** Speak or type natural commands (e.g. *"20 rs for chai from Sharma shop"*, *"split 240 pizza with Raj and Amit"*) to automatically extract amount, merchant note, category, intent, date, and split count.
 - **Safe-to-Spend Today Metric:** Dynamically recalculates daily spending pace with zero red panic alerts; overspending triggers a **Gentle Recovery Coach** suggesting a multi-day trim.
-- **72px Icon-Only Mini Rail (Desktop):** Collapsible desktop navigation that smoothly transitions into an icon rail with floating dark tooltips, paired with an off-canvas slide-over drawer on mobile.
 - **Impulse Cooldown Wishlist:** A 48-hour parking tank for impulsive shopping desires with live countdown timers and total money saved metrics.
 - **Hostel Splits & Bills Ledger:** Shared expenses, roommate settlement tracking, and monthly recurring bills.
 - **Academic Statistical Validation:** Built-in empirical validation suite with paired t-tests, Cohen's d effect size, and System Usability Scale (SUS) analysis.
@@ -121,8 +120,3 @@ Open your browser and navigate to: **`http://localhost:5000`**
 - **Icons:** [Lucide](https://lucide.dev/) monochrome SVG icons
 - **Typography:** [Inter](https://fonts.google.com/specimen/Inter) by Rasmus Andersson via Google Fonts
 
----
-
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
