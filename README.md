@@ -6,20 +6,17 @@
 [![SQLite](https://img.shields.io/badge/Database-SQLite3-lightgrey.svg)](https://www.sqlite.org/)
 [![Design System](https://img.shields.io/badge/Design-Editorial%20Fintech-1B4332.svg)](#design-system--aesthetics)
 
-> **Emotion-Aware, Zero-Friction Web Expense Tracker & Usability Validation Suite for College Hostel & PG Students**
+A simple web-based personal expense tracker built for college hostel and PG students to log daily expenses quickly and stay within their monthly budget.
 
-SmartSpend is an integrated personal finance web application built to eliminate the **"mystery transactions"** phenomenon common among college hostel and PG students living on tight daily budgets (typically ₹2,500–₹3,000/month). By replacing tedious multi-step forms and negative emotional conditioning (harsh red alerts) with **< 5-second rapid logging**, **1-button voice expense capture**, a **72px icon-only mini rail**, a **Google Gemini AI Assistant (SmartSpend AI)**, and an interactive **Monthly Spending Calendar**, SmartSpend transforms budgeting from an anxiety trigger into a calm daily habit.
+## Features
 
----
-
-## Key Highlights
-
-- **Google AI Studio (Gemini 2.5 Flash):** Natural language expense logging and financial coaching via the official `google-genai` Python SDK, with multi-turn chat, context-aware budget guidance, and an offline rule-based fallback engine.
-- **1-Button Voice Logging:** Speak or type natural commands (e.g. *"20 rs for chai from Sharma shop"*, *"split 240 pizza with Raj and Amit"*) to automatically extract amount, merchant note, category, intent, date, and split count.
-- **Safe-to-Spend Today Metric:** Dynamically recalculates daily spending pace with zero red panic alerts; overspending triggers a **Gentle Recovery Coach** suggesting a multi-day trim.
-- **Impulse Cooldown Wishlist:** A 48-hour parking tank for impulsive shopping desires with live countdown timers and total money saved metrics.
-- **Hostel Splits & Bills Ledger:** Shared expenses, roommate settlement tracking, and monthly recurring bills.
-- **Academic Statistical Validation:** Built-in empirical validation suite with paired t-tests, Cohen's d effect size, and System Usability Scale (SUS) analysis.
+- **Quick Expense Logging:** Add daily expenses in seconds using presets and categories.
+- **Voice & Natural Language Input:** Speak or type expenses naturally (e.g., *"20 rs for chai"*, *"split 240 pizza with Raj and Amit"*) to automatically fill in the amount, category, and split details.
+- **AI Budget Assistant:** Uses Google Gemini (`gemini-2.5-flash`) for expense parsing and budget Q&A. Automatically switches to an offline rule-based parser if no API key is set.
+- **Daily Safe-to-Spend:** Calculates how much you can spend per day based on your remaining monthly budget.
+- **Spending Calendar & Transactions:** View daily spending on a calendar, search or filter past entries, edit records, and export data to CSV.
+- **Splits & Bills:** Track shared roommate expenses, settlements, and monthly bills.
+- **48-Hour Wishlist:** Hold impulse purchases for 48 hours before deciding whether to buy them.
 
 ---
 
