@@ -113,7 +113,3 @@ Open your browser and navigate to: **`http://localhost:5000`**
 - **Database:** [SQLite3](https://www.sqlite.org/) (lightweight, zero-config embedded SQL)
 - **Data Science:** [NumPy](https://numpy.org/), [Pandas](https://pandas.pydata.org/), [SciPy](https://scipy.org/), [Matplotlib](https://matplotlib.org/)
 - **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3 Custom Properties
-- **Charts:** [Chart.js](https://www.chartjs.org/) (v4.4 via CDN)
-- **Icons:** [Lucide](https://lucide.dev/) monochrome SVG icons
-- **Typography:** [Inter](https://fonts.google.com/specimen/Inter) by Rasmus Andersson via Google Fonts
-
