@@ -5,7 +5,6 @@
 [![Google Gemini API](https://img.shields.io/badge/Google%20GenAI-gemini--2.5--flash-orange.svg)](https://ai.google.dev/)
 [![SQLite](https://img.shields.io/badge/Database-SQLite3-lightgrey.svg)](https://www.sqlite.org/)
 [![Design System](https://img.shields.io/badge/Design-Editorial%20Fintech-1B4332.svg)](#design-system--aesthetics)
-[![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
 > **Emotion-Aware, Zero-Friction Web Expense Tracker & Usability Validation Suite for College Hostel & PG Students**
 
